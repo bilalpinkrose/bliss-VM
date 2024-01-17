@@ -7,7 +7,6 @@ from supabase import create_client, Client
 import json
 import http.client
 import requests
-from better_profanity import profanity
 from episode import episode, summarizer,next_episode
 from nsfw_episode import generate_story_segments,handle_next_episodes_input
 from transformers import AutoTokenizer, AutoModelForCausalLM
