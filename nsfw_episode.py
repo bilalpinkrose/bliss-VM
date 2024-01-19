@@ -12,9 +12,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
     # Enhanced System Prompt
+    details_str = ','.join(details)
+    details_str = details_str.replace('[', '').replace(']', '').replace('"', '').replace("'", "")
     print(details)
-    details = details.replace('[','').replace(']','').replace('"','')
-    fantasy_list =[item.strip() for item in details.split(',')]
+    fantasy_list = [item.strip() for item in details_str.split(',')]
     system_prompt = f"""<|system|>Enter story writer mode. Generate an highly sexual, erotic narrative that revolves around the main character, 
     {user_info}, 
     who is characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
