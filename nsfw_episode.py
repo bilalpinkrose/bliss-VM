@@ -12,6 +12,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
     # Enhanced System Prompt
+    details = details.replace('[','').replace(']','').replace('"','')
+    fantasy_list =[item.strip() for item in details.split(',')]
     system_prompt = f"""<|system|>Enter story writer mode. Generate an highly sexual, erotic narrative that revolves around the main character, 
     {user_info}, 
     who is characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
@@ -19,7 +21,7 @@ def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn
     The narrative should unfold in a sensually charged atmosphere, blending emotional depth with physical intimacy. 
     Incorporate a kissing scene that exudes passion and a seducing moment that showcases the assertive nature of the character. 
     Maintain the narrative in the first person singular tense to provide an immersive and personal experience.
-    this scenes must be included: first scene is: {details[0]}, second scene is: {details[1]}, third scene is: {details[2]}.
+    this scenes must be included: first scene is: {fantasy_list[0]}, second scene is: {fantasy_list[1]}, third scene is: {fantasy_list[2]}.
     Partner's name is:{partner}
     Adhere to these storytelling elements:
     Partner's name is:{partner}
