@@ -54,6 +54,20 @@ app = Flask(__name__)
 def ai():
   return check_params()
 
+def give_title(Episode):
+    response =openai.ChatCompletion.create(
+       model="gpt-4",
+       messages=[
+            {"role": "system", "content": "You are a title generator. You will generate a title for the story."},
+            {"role": "user", "content": f"""
+            I want you to create a title for this story: {Episode}.
+            If story has explicit content, nsfw or adult content, please give a safe explicit but spicy title.
+            """},    
+            ]
+    )
+    return response['choices'][0]['message']['content']
+       
+
 def check_params():
     episode_level = request.form.get('episode_level')
     
@@ -98,11 +112,18 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         Episode=episode(prompt,user_info,age,gender,interestedIn,partner,place,details)
         summary=summarizer(Episode)
         Episode=Episode.replace(str(summary),"")
-        return jsonify(Episode)
+        output = {'content':Episode, 'title' : '','episode':episode_number,'summary':summary}
+
+        return jsonify(output)
 
 
     if episode_level in (3, 4) and 1 <= episode_number <= 7:
         nsfw_episode=generate_story_segments(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details)
+        paragraphs = nsfw_episode.split('\n')
+        # first two paragraphs are the nsfw_title_prompt
+        nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
+        nsfw_title = give_title(nsfw_episode)
+
     return jsonify(nsfw_episode)
 
 def handle_generate_episode(user_info,age,gender,interestedIn,partner,place,prompt):
@@ -112,4 +133,4 @@ def handle_generate_episode(user_info,age,gender,interestedIn,partner,place,prom
 
 
 if __name__ == '__main__':
-    app.run(port=8000)
+    app.run()
