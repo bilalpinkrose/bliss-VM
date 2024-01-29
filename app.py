@@ -114,6 +114,8 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         Episode=Episode.replace(str(summary),"")
         #first line of Episode is title
         Title = Episode.split('\n', 1)[0]
+        Episode = Episode.replace(Title, '')
+        Episode = Episode.replace('Episode 1', '')
         output = {'content':Episode, 'title' : Title,'episode':episode_number,'summary':summary}
 
         return jsonify(output)
