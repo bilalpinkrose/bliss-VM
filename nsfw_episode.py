@@ -1,6 +1,6 @@
 # Import necessary libraries
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
+import openai
 ## Model and Tokenizer initialization
 #model_name_or_path = "TheBloke/Mythalion-13B-GPTQ"
 #
@@ -59,5 +59,17 @@ def handle_next_episodes_input(story_segment):
     next_episodes_input = story_segment.replace('\n', ' ')
     return next_episodes_input
 
+def summarize_nsfw(nsfw_episode):
+    response=openai.ChatCompletion.create(
+      model="gpt-4",
+      messages=[
+            {"role": "system", "content": "You are a creative writer focusing on sensual and intimate relationships."},
+            {"role": "user", "content": f"""
+            I want you to summarize the story in a way that is non explicit but spicy. safe for work. not violating any rules.
+             even if the story is nsfw, you should summarize it in a way that is safe for work but spicy. story is: {nsfw_episode}
+            """},    
+            ]
+    )
+    return response['choices'][0]['message']['content']
 
 #def nsfw_next_episode():

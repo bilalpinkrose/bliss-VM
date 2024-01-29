@@ -8,7 +8,7 @@ import json
 import http.client
 import requests
 from episode import episode, summarizer,next_episode
-from nsfw_episode import generate_story_segments,handle_next_episodes_input
+from nsfw_episode import generate_story_segments,handle_next_episodes_input,summarize_nsfw
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 #load dotenv
@@ -112,7 +112,9 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         Episode=episode(prompt,user_info,age,gender,interestedIn,partner,place,details)
         summary=summarizer(Episode)
         Episode=Episode.replace(str(summary),"")
-        output = {'content':Episode, 'title' : '','episode':episode_number,'summary':summary}
+        #first line of Episode is title
+        Title = Episode.split('\n', 1)[0]
+        output = {'content':Episode, 'title' : Title,'episode':episode_number,'summary':summary}
 
         return jsonify(output)
 
@@ -123,8 +125,12 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         # first two paragraphs are the nsfw_title_prompt
         nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
         nsfw_title = give_title(nsfw_episode)
+        #take two paragraphs for nsfw_summary_input
+        nsfw_summary_input = paragraphs[0] + '\n' + paragraphs[1]
+        nsfw_summary=summarize_nsfw(nsfw_summary_input)
+        nsfw_output = {'content':nsfw_episode, 'title' : nsfw_title,'episode':episode_number,'summary':nsfw_summary}
 
-    return jsonify(nsfw_episode)
+    return jsonify(nsfw_output)
 
 def handle_generate_episode(user_info,age,gender,interestedIn,partner,place,prompt):
     Episode=episode(user_info,age,gender,interestedIn,partner,place,prompt)
