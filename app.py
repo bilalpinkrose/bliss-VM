@@ -83,6 +83,7 @@ def check_params():
     if device_token is None:
         print("No device_token provided", 400)
     details = request.form.getlist('details')
+    print(details)
     if details is None:
         print("No details provided", 400)
     age = request.form.get('age')#new
@@ -116,6 +117,7 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         Title = Episode.split('\n', 1)[0]
         Episode = Episode.replace(Title, '')
         Episode = Episode.replace('Episode 1', '')
+        Episode = Episode.replace('Summary:', '').replace('summary:', '').replace('summary', '')
         output = {'content':Episode, 'title' : Title,'episode':episode_number,'summary':summary}
 
         return jsonify(output)
