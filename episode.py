@@ -19,13 +19,13 @@ def episode(user_input,user_info,age,gender,interestedIn,partner,place,tags_sele
       messages=[
             {"role": "system", "content": "You are a creative writer focusing on sensual and intimate relationships."},
             {"role": "user", "content": f"""
-            I want you to act as a storyteller. You will write 7 episodes of a story. This is episode 1.
-            You will come up with entertaining stories that are seductive, spicy,engaging, imaginative and captivating for the 
-            audience. It can be hot stories that captures people's attention and imagination. 
+            I want you to act as a storyteller. You will come up with entertaining stories that are seductive, spicy,engaging, imaginative and captivating for the 
+            audience. It can be hot stories that captures people's attention and imagination.
             Depending on the target audience, you may choose specific themes or topics for your storytelling session e.g., 
-            If it's adults then history-based tales might engage them better etc.
-            My first request is "I need an interesting eroticalike story on perseverance. In every episode, there must be kissing scenes, sensual scenes etc.
-            Keep the language as easy as possible for everyone to understand easily.
+            Target audience is adults so you must focus on adult themes. Use simple daily language for the audience to understand easily.
+            My first request is "I need an interesting eroticalike story on perseverance. there must be kissing scenes, sensual scenes etc.
+            Keep the language as easy as possible for everyone to understand easily. Dont use difficult words. and don't add storytelling words like "once upon a time" etc.
+            Be descriptive and use sensory words to make the story more engaging.
             
             My name is: {user_info}, my age is:{age}, my gender is:{gender}, I am interested in:{interestedIn}
             other character's name is: {partner}, story place is: {place}
@@ -42,10 +42,11 @@ def episode(user_input,user_info,age,gender,interestedIn,partner,place,tags_sele
             5. write in a way that is turning on, spicy, hot.
             6. language should be simple and easy to understand. don't use difficult words. and don't add storytelling words like "once upon a time" etc.
             7. Give a title to the story.
+            8. Dont write or specify episode or episode number.
 
             after you finish writing at least 2000 words long story, please summarize the episode in a way that is ready for using in the next episode as input prompt.
             Summary must have important information about the story.
-            And specify with title, episode number and summary  example: "episode 1: title: xxx, summary: xxx"
+            And specify with title, and summary  example: "title: xxx, summary: xxx"
             """},    
             ]
     )
@@ -99,9 +100,10 @@ def next_episode(sum,episode_number,user_info,age,gender,interestedIn,partner,pl
             6. language should be simple and easy to understand. don't use difficult words. and don't add storytelling words like "once upon a time" etc.
             7. Give a title to the story.
             8. if episode is 7 conlcude the story.
+            9. Don't write episode or episode number.
 
             after you finish writing at least 2000 words long story, please summarize the episode in a way that is ready for using in the next episode as input prompt.
-            And specify with title, episode number and summary  example: "episode 1: title: xxx, summary: xxx"
+            And specify with title, episode number and summary  example: "title: xxx, summary: xxx"
             """},    
             ]
     )
