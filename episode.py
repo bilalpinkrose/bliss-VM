@@ -61,7 +61,13 @@ def summarizer(episode):
     #creating a list of paragraphs
     paragraphs = episode.split('\n')
     #summary equals to the last item of the list
-    summary = str(paragraphs[-2])+str(paragraphs[-1])  
+    print(paragraphs)
+    summary = str(paragraphs[-2])+str(paragraphs[-1]) 
+    if len(paragraphs) >= 2:
+        summary = paragraphs[-2] + '\n' + paragraphs[-1]
+    else:
+        summary = paragraphs[-1]  # Or handle the case differently if needed
+ 
     return summary
 
 ######test#######
