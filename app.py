@@ -70,6 +70,7 @@ def give_title(Episode):
 
 def check_params():
     episode_level = request.form.get('episode_level')
+    print(episode_level)
     
     episode_number = request.form.get('episode_number')
 
