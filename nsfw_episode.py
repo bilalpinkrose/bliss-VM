@@ -57,8 +57,7 @@ def next_tag_story(model,tokenizer,ep,tag,gender):
     system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me, my gender is: {gender}
     the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
     <|user|>this is the story: {ep}
-    continue the story with {tag} scenes. and remember the rules:
-    my gender is: {gender}
+    continue the story with {tag} scenes. and remember write the story in my first person singular tense. my gender is: {gender}
     <|model|>
     """
     prompt = system_prompt
