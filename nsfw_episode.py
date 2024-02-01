@@ -1,47 +1,28 @@
 # Import necessary libraries
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import openai
-## Model and Tokenizer initialization
-#model_name_or_path = "TheBloke/Mythalion-13B-GPTQ"
-#
-## Ensure you have a GPU available for this, as the model is quite large
-#model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map="auto", trust_remote_code=False, revision="main")
-#tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
 
-# Define a function to generate a response
+def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,tag):
+    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character {user_info},
+    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
 
-def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
-    # Enhanced System Prompt
-    details_str = ','.join(details)
-    details_str = details_str.replace('[', '').replace(']', '').replace('"', '').replace("'", "")
-    print(details)
-    fantasy_list = [item.strip() for item in details_str.split(',')]
-    system_prompt = f"""<|system|>Enter story writer mode. Generate an highly sexual, erotic narrative that revolves around the main character, 
-    {user_info}, 
-    who is characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
+    <|user|>Main idea is:{ep}, write {tag} sex scene,
+    I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
     The story should be set in a {place} and revolve around the main character's relationship with {partner}. Partner's gender is: {interestedIn}.
-    The narrative should unfold in a sensually charged atmosphere, blending emotional depth with physical intimacy. 
-    Incorporate a kissing scene that exudes passion and a seducing moment that showcases the assertive nature of the character. 
     Maintain the narrative in the first person singular tense to provide an immersive and personal experience.
-    this scenes must be included: first scene is: {fantasy_list[0]}, second scene is: {fantasy_list[1]}, third scene is: {fantasy_list[2]}.
     Partner's name is:{partner}
     Adhere to these storytelling elements:
-    Partner's name is:{partner}
      Passionate kissing scene
      Seducing moment reflecting assertiveness
-     First person singular narrative style
-    
-    <|user|>Partner's name is:Bill, first episode is:{ep}, write next episode of the story, give really long responses<|model|>
-
+     create a {tag} sex scene,
+     First person singular narrative style<|model|>
     """
-
-    prompt = system_prompt 
-
+    prompt = system_prompt
     for i in range (3):
         # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
         inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
         outputs = model.generate(**inputs,
-                                 max_length=2500,
+                                 max_length=1800,
                                  pad_token_id=tokenizer.eos_token_id,
                                  do_sample=True,
                                  temperature=0.6,
@@ -50,7 +31,7 @@ def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn
         story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
         story_segment = story_segment.replace(system_prompt,'')
         story_segment = story_segment.replace('<|system|>', '').replace('<|user|>', '').replace('<|model|>', '')
-        if len(story_segment) >=2000:
+        if len(story_segment) >=1250:
             return story_segment
 
     return story_segment
@@ -72,4 +53,43 @@ def summarize_nsfw(nsfw_episode):
     )
     return response['choices'][0]['message']['content']
 
-#def nsfw_next_episode():
+def next_tag_story(model,tokenizer,ep,tag):
+    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me,
+    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
+    <|user|>this is the story: {ep}
+    continue the story with {tag} scenes.
+    <|model|>
+    """
+    prompt = system_prompt
+    for i in range (3):
+        # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
+        inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
+        outputs = model.generate(**inputs,
+                                 max_length=1800,
+                                 pad_token_id=tokenizer.eos_token_id,
+                                 do_sample=True,
+                                 temperature=0.6,
+                                 )
+        # Decode the generated text
+        story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        story_segment = story_segment.replace(system_prompt,'')
+        story_segment = story_segment.replace('<|system|>', '').replace('<|user|>', '').replace('<|model|>', '')
+        if len(story_segment) >=1250:
+            return story_segment
+
+    return story_segment
+
+
+def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
+    print("details",details,"\n")
+    fantasy_list = [item.strip() for item in details.split(',')]
+    print("fantasy_list:",fantasy_list)
+    scene_1_input= ep
+    scene_1 = generate_story_segments(model,tokenizer,scene_1_input,user_info,age,gender,interestedIn,partner,place,fantasy_list[0])
+    scene_2_input = handle_next_episodes_input(scene_1)
+    scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1])
+    scene_3_input = handle_next_episodes_input(scene_2)
+    scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2])
+    total_story = str(scene_1) + str(scene_2) + str(scene_3)
+
+    return total_story

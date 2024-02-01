@@ -8,7 +8,7 @@ import json
 import http.client
 import requests
 from episode import episode, summarizer,next_episode
-from nsfw_episode import generate_story_segments,handle_next_episodes_input,summarize_nsfw
+from nsfw_episode import generate_story_segments,handle_next_episodes_input,summarize_nsfw,next_tag_story,total_story
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 #load dotenv
@@ -124,11 +124,11 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
 
 
     if episode_level in (3, 4) and 1 <= episode_number <= 7:
-        nsfw_episode=generate_story_segments(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details)
+        nsfw_episode=total_story(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details)
         paragraphs = nsfw_episode.split('\n')
         # first two paragraphs are the nsfw_title_prompt
         nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
-        nsfw_title = give_title(nsfw_episode)
+        nsfw_title = give_title(nsfw_title_prompt)
         #take two paragraphs for nsfw_summary_input
         nsfw_summary_input = paragraphs[0] + '\n' + paragraphs[1]
         nsfw_summary=summarize_nsfw(nsfw_summary_input)
