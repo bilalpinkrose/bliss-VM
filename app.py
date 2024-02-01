@@ -131,6 +131,7 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
         nsfw_title = give_title(nsfw_title_prompt)
         #take two paragraphs for nsfw_summary_input
+        nsfw_title = nsfw_title.replace('"', '')
         nsfw_summary_input = paragraphs[0] + '\n' + paragraphs[1]
         nsfw_summary=summarize_nsfw(nsfw_summary_input)
         nsfw_output = {'content':nsfw_episode, 'title' : nsfw_title,'episode':episode_number,'summary':nsfw_summary}

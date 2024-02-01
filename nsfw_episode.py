@@ -53,11 +53,12 @@ def summarize_nsfw(nsfw_episode):
     )
     return response['choices'][0]['message']['content']
 
-def next_tag_story(model,tokenizer,ep,tag):
-    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me,
+def next_tag_story(model,tokenizer,ep,tag,gender):
+    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me, my gender is: {gender}
     the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
     <|user|>this is the story: {ep}
-    continue the story with {tag} scenes.
+    continue the story with {tag} scenes. and remember the rules:
+    my gender is: {gender}
     <|model|>
     """
     prompt = system_prompt
@@ -82,14 +83,14 @@ def next_tag_story(model,tokenizer,ep,tag):
 
 def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
     print("details",details,"\n")
-    fantasy_list = [item.strip() for item in details.split(',')]
+    fantasy_list = details
     print("fantasy_list:",fantasy_list)
     scene_1_input= ep
     scene_1 = generate_story_segments(model,tokenizer,scene_1_input,user_info,age,gender,interestedIn,partner,place,fantasy_list[0])
     scene_2_input = handle_next_episodes_input(scene_1)
-    scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1])
+    scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1],gender)
     scene_3_input = handle_next_episodes_input(scene_2)
-    scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2])
+    scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2],gender)
     total_story = str(scene_1) + str(scene_2) + str(scene_3)
 
     return total_story
