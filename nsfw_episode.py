@@ -6,26 +6,27 @@ def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn
     system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character {user_info},
     the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
 
-    <|user|>Main idea is:{ep}, write {tag} sex scene,
-    I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
+    <|user|>I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
     The story should be set in a {place} and revolve around the main character's relationship with {partner}. Partner's gender is: {interestedIn}.
     Maintain the narrative in the first person singular tense to provide an immersive and personal experience.
     Partner's name is:{partner}
     Adhere to these storytelling elements:
-     Passionate kissing scene
-     Seducing moment reflecting assertiveness
+     Passionate kissing scene.
+     Seducing moment reflecting assertiveness.
      create a {tag} sex scene,
-     First person singular narrative style<|model|>
+     First person singular narrative style.
+     Main idea is:{ep}, write {tag} sex scene.<|model|>
     """
     prompt = system_prompt
     for i in range (3):
         # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
         inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
         outputs = model.generate(**inputs,
-                                 max_length=1800,
-                                 pad_token_id=tokenizer.eos_token_id,
-                                 do_sample=True,
-                                 temperature=0.6,
+                                max_length=1800,
+                                pad_token_id=tokenizer.eos_token_id,
+                                do_sample=True,
+                                temperature=0.6,
+                                no_repeat_ngram_size=4,
                                  )
         # Decode the generated text
         story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -65,10 +66,11 @@ def next_tag_story(model,tokenizer,ep,tag,gender):
         # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
         inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
         outputs = model.generate(**inputs,
-                                 max_length=1800,
-                                 pad_token_id=tokenizer.eos_token_id,
-                                 do_sample=True,
-                                 temperature=0.6,
+                                max_length=1800,
+                                pad_token_id=tokenizer.eos_token_id,
+                                do_sample=True,
+                                temperature=0.6,
+                                no_repeat_ngram_size=4,
                                  )
         # Decode the generated text
         story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -81,15 +83,21 @@ def next_tag_story(model,tokenizer,ep,tag,gender):
 
 
 def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
+    scene_1=""
+    scene_2=""
+    scene_3=""
     print("details",details,"\n")
     fantasy_list = details
     print("fantasy_list:",fantasy_list)
     scene_1_input= ep
     scene_1 = generate_story_segments(model,tokenizer,scene_1_input,user_info,age,gender,interestedIn,partner,place,fantasy_list[0])
-    scene_2_input = handle_next_episodes_input(scene_1)
-    scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1],gender)
-    scene_3_input = handle_next_episodes_input(scene_2)
-    scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2],gender)
+    if len(fantasy_list) == 2:
+        scene_2_input = handle_next_episodes_input(scene_1)
+        scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1],gender)
+    if len(fantasy_list) == 3:
+        scene_3_input = handle_next_episodes_input(scene_2)
+        scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2],gender)
+    
     total_story = str(scene_1) + str(scene_2) + str(scene_3)
 
     return total_story
