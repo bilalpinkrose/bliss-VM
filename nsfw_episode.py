@@ -2,9 +2,9 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import openai
 
-def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,tag):
+def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,tag,categories):
     system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character {user_info},
-    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
+    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}. Story theme is: {categories}. Write in first person singular tense.
 
     <|user|>I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
     The story should be set in a {place} and revolve around the main character's relationship with {partner}. Partner's gender is: {interestedIn}.
@@ -12,7 +12,7 @@ def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn
     Partner's name is:{partner}
     Adhere to these storytelling elements:
      Passionate kissing scene.
-     Seducing moment reflecting assertiveness.
+     Story theme is: {categories}
      create a {tag} sex scene,
      First person singular narrative style.
      Main idea is:{ep}, write {tag} sex scene.<|model|>
@@ -54,11 +54,12 @@ def summarize_nsfw(nsfw_episode):
     )
     return response['choices'][0]['message']['content']
 
-def next_tag_story(model,tokenizer,ep,tag,gender):
+def next_tag_story(model,tokenizer,ep,tag,gender,categories):
     system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me, my gender is: {gender}
-    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}
+    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}. Story theme is: {categories}. Write in first person singular tense.
     <|user|>this is the story: {ep}
-    continue the story with {tag} scenes. and remember write the story in my first person singular tense. my gender is: {gender}
+
+    continue the story with {tag} scenes. and remember my gender is: {gender}. write the story in my first person singular tense. and remember the story is about {tag} scene. Story theme is: {categories}.
     <|model|>
     """
     prompt = system_prompt
@@ -82,7 +83,7 @@ def next_tag_story(model,tokenizer,ep,tag,gender):
     return story_segment
 
 
-def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details):
+def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details,categories):
     scene_1=""
     scene_2=""
     scene_3=""
@@ -90,13 +91,13 @@ def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,pla
     fantasy_list = details
     print("fantasy_list:",fantasy_list)
     scene_1_input= ep
-    scene_1 = generate_story_segments(model,tokenizer,scene_1_input,user_info,age,gender,interestedIn,partner,place,fantasy_list[0])
+    scene_1 = generate_story_segments(model,tokenizer,scene_1_input,user_info,age,gender,interestedIn,partner,place,fantasy_list[0],categories)
     if len(fantasy_list) == 2:
         scene_2_input = handle_next_episodes_input(scene_1)
-        scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1],gender)
+        scene_2 = next_tag_story(model,tokenizer,scene_1,fantasy_list[1],gender,categories)
     if len(fantasy_list) == 3:
         scene_3_input = handle_next_episodes_input(scene_2)
-        scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2],gender)
+        scene_3 = next_tag_story(model,tokenizer,scene_2,fantasy_list[2],gender,categories)
     
     total_story = str(scene_1) + str(scene_2) + str(scene_3)
 

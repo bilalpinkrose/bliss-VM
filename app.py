@@ -105,13 +105,16 @@ def check_params():
     user_info =request.form.get('user_info')#partner name
     if user_info is None:
         print("No user_info provided",400)
-    return main_events(episode_level,episode_number,user_id,prompt,device_token,details,age,gender,interestedIn,place,partner,user_info)
+    categories = request.form.get('user_info')
+    if categories is None:
+        print("No categories are provided",400)
+    return main_events(episode_level,episode_number,user_id,prompt,device_token,details,age,gender,interestedIn,place,partner,user_info,categories)
 
-def main_events(episode_level,episode_number,user_id,prompt,device_token,details,age,gender,interestedIn,place,partner,user_info):
+def main_events(episode_level,episode_number,user_id,prompt,device_token,details,age,gender,interestedIn,place,partner,user_info,categories):
     episode_level = int(episode_level)
     episode_number = int(episode_number)
     if episode_level in (1, 2) and 1 <= episode_number <= 7:
-        Episode=episode(prompt,user_info,age,gender,interestedIn,partner,place,details)
+        Episode=episode(prompt,user_info,age,gender,interestedIn,partner,place,details)#geri gelirse categories'i ekle
         summary=summarizer(Episode)
         Episode=Episode.replace(str(summary),"")
         #first line of Episode is title
@@ -125,7 +128,7 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
 
 
     if episode_level in (3, 4) and 1 <= episode_number <= 7:
-        nsfw_episode=total_story(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details)
+        nsfw_episode=total_story(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details,categories)
         paragraphs = nsfw_episode.split('\n')
         # first two paragraphs are the nsfw_title_prompt
         nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
