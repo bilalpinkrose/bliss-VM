@@ -3,39 +3,34 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import openai
 
 def generate_story_segments(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,tag,categories):
-    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character {user_info},
+    device = "cuda"
+    messages = [
+    {"role": "user", "content": f"""You are a sexual erotica writer. You must write erotica that full of sexual content. Generate an highly sexual, erotic narrative that revolves around the main character {user_info},
     the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}. Story theme is: {categories}. Write in first person singular tense.
-
-    <|user|>I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
+    I am characterized by the following attributes: my name: {user_info}, my age:{age}, my gender: {gender}, my traits: Highly affectionate, assertive, unreserved in expressing desires.
     The story should be set in a {place} and revolve around the main character's relationship with {partner}. Partner's gender is: {interestedIn}.
     Maintain the narrative in the first person singular tense to provide an immersive and personal experience.
-    Partner's name is:{partner}
+    Partner's name is:{partner}. Be descriptive about fucking scenes. Every paragraph must be sexual. more than half of the erotica must be explicit, nsfw, sexual content. 
     Adhere to these storytelling elements:
+     Easy to understand, daily language.
      Passionate kissing scene.
      Story theme is: {categories}
-     create a {tag} sex scene,
-     First person singular narrative style.
-     Main idea is:{ep}, write {tag} sex scene.<|model|>
-    """
-    prompt = system_prompt
+     create a {tag} fuck scene, First person singular narrative style. 
+     Main idea is:{ep}, write {tag} fuck scene. Use words like: He fucked me real good, I fucked her pussy etc.
+    """},
+    ]
     for i in range (3):
-        # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
-        inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
-        outputs = model.generate(**inputs,
-                                max_length=1800,
-                                pad_token_id=tokenizer.eos_token_id,
-                                do_sample=True,
-                                temperature=0.6,
-                                no_repeat_ngram_size=4,
-                                 )
-        # Decode the generated text
-        story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        story_segment = story_segment.replace(system_prompt,'')
-        story_segment = story_segment.replace('<|system|>', '').replace('<|user|>', '').replace('<|model|>', '')
-        if len(story_segment) >=1250:
-            return story_segment
+        encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
+        model_inputs = encodeds.to(device)
+        
+        generated_ids = model.generate(model_inputs, max_new_tokens=1800, do_sample=True)
+        story_segment = tokenizer.batch_decode(generated_ids)
+        story_segment[0]= story_segment[0].replace(messages[0]['content'],"").replace("<s>","").replace("[INST]","").replace("[/INST]","").replace("</s>","")
 
-    return story_segment
+        if len(story_segment) >=1250:
+            return story_segment[0]
+
+    return story_segment[0]
 
 def handle_next_episodes_input(story_segment):
     next_episodes_input = story_segment.replace('\n', ' ')
@@ -55,32 +50,29 @@ def summarize_nsfw(nsfw_episode):
     return response['choices'][0]['message']['content']
 
 def next_tag_story(model,tokenizer,ep,tag,gender,categories):
-    system_prompt = f"""<|system|>Enter highly sexual erotica writer mode. Generate an highly sexual, erotic narrative that revolves around the main character me, my gender is: {gender}
-    the most important parts of the story is {tag} part. You must create the story based on this sex scene: {tag}. Story theme is: {categories}. Write in first person singular tense.
-    <|user|>this is the story: {ep}
 
-    continue the story with {tag} scenes. and remember my gender is: {gender}. write the story in my first person singular tense. and remember the story is about {tag} scene. Story theme is: {categories}.
-    <|model|>
-    """
-    prompt = system_prompt
+    messages = [
+    {"role": "user", "content": f"""Write in first person's singular tense. Create the next episode of this sexual fuck story with this fuck scene {tag}:
+     Don't specify Title and Episode etc. Write in daily language, easy to understand. Don't forget to write {tag} sex scene.
+     story:
+     {ep}
+
+   """},
+
+]
+    
     for i in range (3):
         # Tokenize and generate response, no_repeat_ngram_size ve repetition_penalty gerekirse tanımla.
-        inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=2500).to('cuda')
-        outputs = model.generate(**inputs,
-                                max_length=1800,
-                                pad_token_id=tokenizer.eos_token_id,
-                                do_sample=True,
-                                temperature=0.6,
-                                no_repeat_ngram_size=4,
-                                 )
-        # Decode the generated text
-        story_segment = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        story_segment = story_segment.replace(system_prompt,'')
-        story_segment = story_segment.replace('<|system|>', '').replace('<|user|>', '').replace('<|model|>', '')
+        encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
+        model_inputs = encodeds.to("cuda")
+        generated_ids = model.generate(model_inputs, max_new_tokens=1800, do_sample=True)
+        story_segment = tokenizer.batch_decode(generated_ids)
+        
+        story_segment[0] = story_segment[0].replace(messages[0]['content'],"").replace("<s>","").replace("[INST]","").replace("[/INST]","").replace("</s>","")
         if len(story_segment) >=1250:
-            return story_segment
+            return story_segment[0]
 
-    return story_segment
+    return story_segment[0]
 
 
 def total_story(model,tokenizer,ep,user_info,age,gender,interestedIn,partner,place,details,categories):

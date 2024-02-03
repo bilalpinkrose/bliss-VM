@@ -10,7 +10,7 @@ import requests
 from episode import episode, summarizer,next_episode
 from nsfw_episode import generate_story_segments,handle_next_episodes_input,summarize_nsfw,next_tag_story,total_story
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+from auto_gptq import exllama_set_max_input_length
 #load dotenv
 
 
@@ -20,12 +20,13 @@ load_dotenv()
 
 
 # Model and Tokenizer initialization
-model_name_or_path = "TheBloke/Mythalion-13B-GPTQ"
+model_name_or_path = "TheBloke/Mistral-7B-Instruct-v0.2-GPTQ"
 
 # Ensure you have a GPU available for this, as the model is quite large
 model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map="auto", trust_remote_code=False, revision="main")
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
-
+model = model.to("cuda")
+model = exllama_set_max_input_length(model, max_input_length=4500)
 
 #supabase
 url = 'SUPABASE_URL'
@@ -137,6 +138,9 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
         nsfw_title = nsfw_title.replace('"', '')
         nsfw_summary_input = paragraphs[0] + '\n' + paragraphs[1]
         nsfw_summary=summarize_nsfw(nsfw_summary_input)
+        nsfw_episode=nsfw_episode.replace("\n\n\n\n","\n")
+        nsfw_episode=nsfw_episode.replace("\n\n\n","\n")
+        nsfw_episode=nsfw_episode.replace("\n\n","\n")
         nsfw_output = {'content':nsfw_episode, 'title' : nsfw_title,'episode':episode_number,'summary':nsfw_summary}
 
     return jsonify(nsfw_output)
