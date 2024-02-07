@@ -9,8 +9,8 @@ import http.client
 import requests
 from episode import episode, summarizer,next_episode
 from nsfw_episode import generate_story_segments,handle_next_episodes_input,summarize_nsfw,next_tag_story,total_story
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from auto_gptq import exllama_set_max_input_length
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from web import generate_story_segments_tool,next_episode_tool,main_events_tool
 #load dotenv
 
 
@@ -20,13 +20,15 @@ load_dotenv()
 
 
 # Model and Tokenizer initialization
-model_name_or_path = "TheBloke/Mistral-7B-Instruct-v0.2-GPTQ"
+model_name_or_path = "TheBloke/Mistral-7B-Instruct-v0.2-AWQ"
 
 # Ensure you have a GPU available for this, as the model is quite large
-model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map="auto", trust_remote_code=False, revision="main")
-tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
-model = model.to("cuda")
-model = exllama_set_max_input_length(model, max_input_length=4500)
+tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name_or_path,
+    low_cpu_mem_usage=True,
+    device_map="cuda:0"
+)
 
 #supabase
 url = 'SUPABASE_URL'
@@ -129,7 +131,7 @@ def main_events(episode_level,episode_number,user_id,prompt,device_token,details
 
 
     if episode_level in (3, 4) and 1 <= episode_number <= 7:
-        nsfw_episode=total_story(model,tokenizer,prompt,user_info,age,gender,interestedIn,partner,place,details,categories)
+        nsfw_episode=total_story(model,tokenizer,prompt,age,gender,interestedIn,partner,place,details,categories)
         paragraphs = nsfw_episode.split('\n')
         # first two paragraphs are the nsfw_title_prompt
         nsfw_title_prompt = paragraphs[0] + '\n' + paragraphs[1]
@@ -149,7 +151,59 @@ def handle_generate_episode(user_info,age,gender,interestedIn,partner,place,prom
     Episode=episode(user_info,age,gender,interestedIn,partner,place,prompt)
     return Episode
 
+@app.route('/web', methods=['POST'])
+def web_handler():
+    data = request.json
+    ep = data.get("prompt",None)
+    if ep is None:
+        return jsonify({"message": "No prompt provided"})
+    else:
+        print(ep)
+    user_info = data.get("user_info",None)
+    if user_info is None:
+        return jsonify({"message": "No user_info provided"})
+    else:
+        print(user_info)
+    age = data.get("age",None)
+    if age is None:
+        return jsonify({"message": "No age provided"})
+    else:
+        print(age)
+    gender = data.get('gender', None)
+    if gender is None:
+        return jsonify({"message": "No gender provided"})
+    interestedIn = data.get('interestedIn', None)
+    if interestedIn is None:
+        return jsonify({"message": "No interestedIn provided"})
+    else:
+        print(interestedIn)
+    place = data.get('place', None)
+    if place is None:
+        return jsonify({"message": "No place provided"})
+    else:
+        print(place)
+    partner = data.get('partner', None)
+    if partner is None:
+        return jsonify({"message": "No partner provided"})
+    else:
+        print(partner)
+    tag = data.get('tag', None)
+    if tag is None:
+        return jsonify({"message": "No tag provided"})
+    else:
+        print(tag)
+    categories = data.get('categories', None)
+    if categories is None:
+        return jsonify({"message": "No categories provided"})
+    else:
+        print(categories)
+
+
+    # Call the main_events_tool function with the extracted parameters
+    total_story = main_events_tool(model, tokenizer, ep, user_info, age, gender, interestedIn, partner, place, tag, categories)
+    return total_story
+
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000, host='0.0.0.0')
